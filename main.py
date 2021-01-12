@@ -1,16 +1,21 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+import sys
+
+from Repository import *
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+def main(config_file):
+    open(DB_FILE_NAME, 'w').close()  # clear the db file
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    repo.create_tables()
+    with open(config_file, "r") as f:
+        first_line = f.readline()
+        init_lines = f.readlines()
+    repo.fill_tables(init_lines, first_line)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        raise ValueError("usage - initiate.py config.txt")
+    main(sys.argv[1])
