@@ -8,14 +8,21 @@ class _Vaccines:
                     INSERT INTO Vaccines (id, date, supplier_id, quantity) VALUES (?, ?, ?, ?)
                 """, [vaccine.id, vaccine.date, vaccine.supplier_id, vaccine.quantity])
 
-    def update(self, vaccine_id, quantity):
-        self._cursor.execute("""UPDATE Vaccines SET quantity = quantity + ?
-                WHERE id = ?""", [quantity, vaccine_id])
+    """If an order request has been set, 
+    we update the quantity and then check with get quantity if quantity==0. if we do we remove him from the table"""
 
-    def get_quantity(self, product_id):
+    def update_quantity(self, vaccine_id, amount):
+        self._cursor.execute("""UPDATE Vaccines SET quantity = quantity - ?
+                WHERE id = ?""", [amount, vaccine_id])
+
+    def get_quantity(self, vaccine_id):
         self._cursor.execute("""SELECT quantity FROM Vaccines
-                       WHERE id = ?""", [product_id])
+                       WHERE id = ?""", [vaccine_id])
         return int(self._cursor.fetchone()[0])
+
+    def delete(self, vaccine_id):
+        self._cursor.execute("""
+                    DELETE FROM Vaccines WHERE id = ?""", [vaccine_id])
 
     def fetch_table(self):
         self._cursor.execute("SELECT * FROM Vaccines ORDER BY Vaccines.id")
@@ -49,6 +56,10 @@ class _Clinics:
                 INSERT INTO Clinics (id, location, demand, logistic_id) VALUES (?, ?, ?, ?)
             """, [clinic.id, clinic.location, clinic.demand, clinic.logistic_id])
 
+    def update_demand(self, clinic_id, amount):
+        self._cursor.execute("""UPDATE Vaccines SET demand = demand - ?
+                                WHERE id = ?""", [amount, clinic_id])
+
     def fetch_table(self):
         self._cursor.execute("SELECT * FROM Clinics ORDER BY Suppliers.id")
         all_data = self._cursor.fetchall()
@@ -65,8 +76,15 @@ class _Logistics:
                 INSERT INTO Logistics (id, name, count_sent, count_received) VALUES (?, ?, ?, ?)
             """, [logistic.id, logistic.name, logistic.count_sent, logistic.count_received])
 
+    def update_count_sent(self, logistic_id, amount):
+        self._cursor.execute("""UPDATE Logistics SET count_sent = count_sent + ?
+                                WHERE id = ?""", [amount, logistic_id])
+
+    def update_count_received(self, logistic_id, amount):
+        self._cursor.execute("""UPDATE Logistics SET count_received = count_received + ?
+                                WHERE id = ?""", [amount, logistic_id])
+
     def fetch_table(self):
         self._cursor.execute("SELECT * FROM Logistics ORDER BY Suppliers.id")
         all_data = self._cursor.fetchall()
         return all_data
-
