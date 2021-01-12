@@ -43,29 +43,28 @@ class _Repository:
               """)
 
     def fill_tables(self, init_lines, first_line):
+        data_arr = first_line.split(',')
+        data_arr = [arg.strip() for arg in data_arr]
+        vac_num = data_arr[0]
+        sup_num = data_arr[1]
+        cli_num = data_arr[2]
+        log_num = data_arr[3]
 
-        dataArr = first_line.split(',')
-        dataArr = [arg.strip() for arg in dataArr]
-        vacNum = dataArr[0]
-        supNum = dataArr[1]
-        cliNum = dataArr[2]
-        logNum = dataArr[3]
-
-        i = 0
+        i = 0  # do you mean i=1 because we want to avoid the first line?
 
         for line in init_lines:
 
             args = line.split(',')
 
-            if i < vacNum:  # in this case we in the line of Vaccines
+            if i < vac_num:  # in this case we in the line of Vaccines
                 vaccine = Vaccine(*args)
                 self._vaccines.insert(vaccine)
 
-            elif vacNum <= i < supNum:  # in this case we in the line of supplier
+            elif vac_num <= i < sup_num:  # in this case we in the line of supplier
                 supplier = Supplier(*args)
                 self._suppliers.insert(supplier)
 
-            elif supNum <= i < cliNum:  # in this case we in the line of clinics
+            elif sup_num <= i < cli_num:  # in this case we in the line of clinics
                 clinic = Clinic(*args)
                 self._clinics.insert(clinic)
 
@@ -74,6 +73,11 @@ class _Repository:
                 self._logistics.insert(logistic)
 
             i = i + 1
+
+    def order_report(self):
+        cursor = self._conn.cursor()
+        cursor.execute("""SELECT sum
+                            """)
 
 
 repo = _Repository()
