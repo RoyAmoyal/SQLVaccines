@@ -79,7 +79,7 @@ class _Repository:
         cursor = self._conn.cursor()
         cursor.execute("""SELECT SUM(quantity),SUM(demand),SUM(total_received),SUM(total_sent)
                         FROM Vaccines,Clinics,Logistics,Logistics""")
-        cursor.fetchall()
+        return cursor.fetchall()
 
     def received_shipment(self, args):
         name = args[0]
