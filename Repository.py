@@ -81,6 +81,23 @@ class _Repository:
                         FROM Vaccines,Clinics,Logistics,Logistics""")
         cursor.fetchall()
 
+    def received_shipment(self, args):
+        name = args[0]
+        amount = args[1]
+        date = args[2]
+        cursor = self._conn.cursor()
+        cursor.execute("""SELECT id FROM Suppliers
+        WHERE name = ?   """, [name])
+        sup_id = cursor.fetchone()[0]
+        cursor.execute(""" SELECT COUNT(id) FROM Vaccines""")
+        vac_id = cursor.fetchone()[0]
+        vaccine = Vaccine(vac_id, date, sup_id, amount)
+        self._vaccines.insert(vaccine)    # inserting to the Vaccines
+        cursor.execute("""SELECT logistic_id FROM Suppliers
+                WHERE name = ?   """, [name])
+        log_id = cursor.fetchone()[0]
+        self._logistics.update_count_received(log_id, amount)  # update count_received
+
 
 repo = _Repository()
 

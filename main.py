@@ -22,7 +22,7 @@ def main(config_file, order_file, output_file):
             args = line.split(',')  # we need to make sure that the split not ruin the line
             args = [arg.strip() for arg in args]
             if len(args) == 3:
-                repo.recieve_shipment(line)
+                repo.receive_shipment(line)
             else:
                 repo.send_shipment(line)
 
