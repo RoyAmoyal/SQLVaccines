@@ -5,6 +5,7 @@ from Repository import *
 
 def main(config_file, order_file, output_file):
     open("database.db", 'w').close()  # clear the db file
+    open('output.txt', 'w').close() # clear the output file
 
     repo.create_tables()
     with open(config_file, "r") as f:
