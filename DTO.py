@@ -19,13 +19,14 @@ class Clinic:
         self.id = clinic_id
         self.location = location
         self.demand = demand
-        self.logistic_id = int(logistic_id)
+        self.logistic_id = logistic_id
 
 
 class Logistic:
-    def __init__(self, logistic_id, name):
+    def __init__(self, logistic_id, name, count_sent, count_received):
         self.id = logistic_id
         self.name = name
-        self.count_sent = 0  # default value
-        self.count_received = 0  # default value
+        self.count_sent = count_sent
+        self.count_received = count_received
+
 
