@@ -42,6 +42,8 @@ class _Repository:
                                                               count_received INTEGER NOT NULL)
               """)
 
+
+
     def fill_tables(self, init_lines, first_line):
         data_arr = first_line.split(',')
         data_arr = [arg.strip() for arg in data_arr]
@@ -74,6 +76,10 @@ class _Repository:
                 self._logistics.insert(logistic)
 
             i = i - 1
+
+
+
+
 
     def order_report(self):
         cursor = self._conn.cursor()
