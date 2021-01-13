@@ -14,21 +14,21 @@ def main(config_file, order_file, output_file):
 
     with open(order_file, "r") as o:
         order_lines = o.readlines()
-    repo.order_active(order_lines)
-
-    # this method will be in repository
-    def order_active(self, order_lines):
-        for line in order_lines:
-            args = line.split(',')  # we need to make sure that the split not ruin the line
-            args = [arg.strip() for arg in args]
-            if len(args) == 3:
-                repo.recieve_shipment(line)
-            else:
-                repo.send_shipment(line)
+        with open(output_file, "a") as q:
+            for line in order_lines:
+                args = line.split(',')  # we need to make sure that the split not ruin the line
+                args = [arg.strip() for arg in args]
+                if len(args) == 3:
+                    repo.recieved_shipment(line)
+                    curr_report = repo.order_report().split(',')
+                else:
+                    repo.send_shipment(line)
+                    curr_report = repo.order_report().split(',')
+                q.write(curr_report + "\n")
+            q.close()
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 4:
         raise ValueError("usage - main.py config.txt order.txt output.txt")
     main(sys.argv[1], sys.argv[2], sys.argv[3])
-
