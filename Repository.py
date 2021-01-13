@@ -45,26 +45,27 @@ class _Repository:
     def fill_tables(self, init_lines, first_line):
         data_arr = first_line.split(',')
         data_arr = [arg.strip() for arg in data_arr]
-        vac_num = data_arr[0]
-        sup_num = data_arr[1]
-        cli_num = data_arr[2]
-        log_num = data_arr[3]
+        vac_num = data_arr[0]  # 3
+        sup_num = data_arr[1]  # 2
+        cli_num = data_arr[2]  # 1
+        log_num = data_arr[3]  # 2
+        sumNum = log_num + cli_num + sup_num + vac_num  # 8
 
-        i = 0  # do you mean i=1 because we want to avoid the first line?
+        i = sumNum
 
-        for line in init_lines:
+        for line in reversed(init_lines):
 
             args = line.split(',')
 
-            if i < vac_num:  # in this case we in the line of Vaccines
+            if i <= vac_num:  # in this case we in the line of Vaccines
                 vaccine = Vaccine(*args)
                 self._vaccines.insert(vaccine)
 
-            elif vac_num <= i < sup_num:  # in this case we in the line of supplier
+            elif vac_num < i <= (sup_num + vac_num):  # in this case we in the line of supplier
                 supplier = Supplier(*args)
                 self._suppliers.insert(supplier)
 
-            elif sup_num <= i < cli_num:  # in this case we in the line of clinics
+            elif (sup_num + vac_num) < i <= (sumNum - log_num):  # in this case we in the line of clinics
                 clinic = Clinic(*args)
                 self._clinics.insert(clinic)
 
@@ -72,7 +73,7 @@ class _Repository:
                 logistic = Logistic(*args)
                 self._logistics.insert(logistic)
 
-            i = i + 1
+            i = i - 1
 
     def order_report(self):
         cursor = self._conn.cursor()
