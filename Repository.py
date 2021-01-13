@@ -43,10 +43,10 @@ class _Repository:
     def fill_tables(self, init_lines, first_line):
         data_arr = first_line.split(',')
         data_arr = [arg.strip() for arg in data_arr]
-        vac_num = data_arr[0]  # 3
-        sup_num = data_arr[1]  # 2
-        cli_num = data_arr[2]  # 1
-        log_num = data_arr[3]  # 2
+        vac_num = int(data_arr[0])  # 3
+        sup_num = int(data_arr[1])  # 2
+        cli_num = int(data_arr[2])  # 1
+        log_num = int(data_arr[3])  # 2
         sumNum = log_num + cli_num + sup_num + vac_num  # 8
 
         i = sumNum
