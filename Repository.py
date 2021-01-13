@@ -4,18 +4,16 @@ import atexit
 from DAO import _Vaccines, _Suppliers, _Clinics, _Logistics
 from DTO import *
 
-DB_FILE_NAME = "database.db"
-
 
 class _Repository:
     def __init__(self):
-        self._conn = sqlite3.connect(DB_FILE_NAME)
+        self._conn = sqlite3.connect("database.db")
         self._vaccines = _Vaccines(self._conn)
         self._suppliers = _Suppliers(self._conn)
         self._clinics = _Clinics(self._conn)
         self._logistics = _Logistics(self._conn)
 
-    def _close(self):
+    def close(self):
         self._conn.commit()
         self._conn.close()
 
@@ -42,8 +40,6 @@ class _Repository:
                                                               count_received INTEGER NOT NULL)
               """)
 
-
-
     def fill_tables(self, init_lines, first_line):
         data_arr = first_line.split(',')
         data_arr = [arg.strip() for arg in data_arr]
@@ -56,9 +52,7 @@ class _Repository:
         i = sumNum
 
         for line in reversed(init_lines):
-
             args = line.split(',')
-
             if i <= vac_num:  # in this case we in the line of Vaccines
                 vaccine = Vaccine(*args)
                 self._vaccines.insert(vaccine)
@@ -77,10 +71,6 @@ class _Repository:
 
             i = i - 1
 
-
-
-
-
     def order_report(self):
         cursor = self._conn.cursor()
         cursor.execute("""SELECT SUM(quantity),SUM(demand),SUM(total_received),SUM(total_sent)
@@ -98,13 +88,32 @@ class _Repository:
         cursor.execute(""" SELECT COUNT(id) FROM Vaccines""")
         vac_id = cursor.fetchone()[0]
         vaccine = Vaccine(vac_id, date, sup_id, amount)
-        self._vaccines.insert(vaccine)    # inserting to the Vaccines
+        self._vaccines.insert(vaccine)  # inserting to the Vaccines
         cursor.execute("""SELECT logistic_id FROM Suppliers
                 WHERE name = ?   """, [name])
         log_id = cursor.fetchone()[0]
         self._logistics.update_count_received(log_id, amount)  # update count_received
 
+    def send_shipment(self, args):
+        amount = args[1]
+        cursor = self._conn.cursor()
+        cursor.execute("""SELECT id FROM Clinics WHERE name = ?""", [args[0]])
+        clinic_id = cursor.fetchone()[0]
+        self._clinics.update_demand(clinic_id, amount)  # Updates the demand after the clinic got the vaccines
+        cursor.execute("""SELECT logistic_id FROM Clinics WHERE id = ?""", [clinic_id])
+        logistic_id = cursor.fetchone()[0]
+        self._logistics.update_count_sent(logistic_id, amount)  # Updates the sent count of the logistic id
+        cursor.execute("""SELECT * FROM Vaccines""")
+        while amount > 0:
+            curr_old_vaccines_stock = cursor.fetchone()  # The tupple of the first line on the vaccines table.
+            curr_quantity = curr_old_vaccines_stock[4]
+            if amount >= curr_quantity:
+                amount = amount - curr_quantity
+                self._vaccines.delete(curr_old_vaccines_stock[0])
+            if amount < curr_quantity:
+                self._vaccines.update_quantity(curr_old_vaccines_stock[0], amount)
+                amount = 0
+
 
 repo = _Repository()
-
 atexit.register(repo.close)
