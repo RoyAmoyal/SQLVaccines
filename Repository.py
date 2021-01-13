@@ -21,18 +21,18 @@ class _Repository:
         cursor = self._conn.cursor()
         cursor.execute("""CREATE TABLE Vaccines(id INTEGER PRIMARY KEY,
                                                     date DATE NOT NULL,
-                                                    supplier INTEGER REFERENCES Supplier(id),  
+                                                    supplier_id INTEGER REFERENCES Supplier(id),  
                                                     quantity INTEGER REFERENCES Coffee_stands(id))
         """)
 
         cursor.execute("""CREATE TABLE Suppliers(id INTEGER PRIMARY KEY,
                                                           name STRING NOT NULL,
-                                                          logistic INTEGER REFERENCES Logistic(id))
+                                                          logistic_id INTEGER REFERENCES Logistic(id))
               """)
         cursor.execute("""CREATE TABLE Clinics(id INTEGER PRIMARY KEY,
                                                           location STRING NOT NULL,
                                                           demand INTEGER NOT NULL,
-                                                          logistic INTEGER REFERENCES logistic(id))
+                                                          logistic_id INTEGER REFERENCES logistic(id))
               """)
         cursor.execute("""CREATE TABLE Logistics(id INTEGER PRIMARY KEY,
                                                               name STRING NOT NULL,
@@ -71,11 +71,22 @@ class _Repository:
 
             i = i - 1
 
-    def order_report(self):
+    def order_report(self):  # ),SUM(demand),SUM(count_received)
         cursor = self._conn.cursor()
-        cursor.execute("""SELECT SUM(quantity),SUM(demand),SUM(total_received),SUM(total_sent)
-                        FROM Vaccines,Clinics,Logistics,Logistics""")
-        return cursor.fetchall()
+        cursor.execute("""SELECT SUM(quantity) FROM Vaccines""")
+        quantity_tuple = cursor.fetchall()[0]
+        quantity_str = "".join(map(str, quantity_tuple))
+        cursor.execute("""SELECT SUM(demand) FROM Clinics""")
+        demand_tuple = cursor.fetchall()[0]
+        demand_str = "".join(map(str, demand_tuple))
+        cursor.execute("""SELECT SUM(count_received) FROM Logistics""")
+        count_received_tuple = cursor.fetchall()[0]
+        count_received_str = "".join(map(str, count_received_tuple))
+        cursor.execute("""SELECT SUM(count_sent) FROM Logistics""")
+        count_sent_tuple = cursor.fetchall()[0]
+        count_sent_str = "".join(map(str, count_sent_tuple))
+        str_report = quantity_str + "," + demand_str + "," + count_received_str + "," + count_sent_str
+        return str_report
 
     def received_shipment(self, args):
         name = args[0]
@@ -97,22 +108,23 @@ class _Repository:
     def send_shipment(self, args):
         amount = args[1]
         cursor = self._conn.cursor()
-        cursor.execute("""SELECT id FROM Clinics WHERE name = ?""", [args[0]])
+        cursor.execute("""SELECT id FROM Clinics WHERE location = ?""", [args[0]])
         clinic_id = cursor.fetchone()[0]
         self._clinics.update_demand(clinic_id, amount)  # Updates the demand after the clinic got the vaccines
         cursor.execute("""SELECT logistic_id FROM Clinics WHERE id = ?""", [clinic_id])
         logistic_id = cursor.fetchone()[0]
         self._logistics.update_count_sent(logistic_id, amount)  # Updates the sent count of the logistic id
         cursor.execute("""SELECT * FROM Vaccines""")
-        while amount > 0:
+        int_amount = int(amount)
+        while int_amount > 0:
             curr_old_vaccines_stock = cursor.fetchone()  # The tupple of the first line on the vaccines table.
-            curr_quantity = curr_old_vaccines_stock[4]
-            if amount >= curr_quantity:
-                amount = amount - curr_quantity
+            curr_quantity = int(curr_old_vaccines_stock[3])
+            if int_amount >= curr_quantity:
+                int_amount = int_amount - curr_quantity
                 self._vaccines.delete(curr_old_vaccines_stock[0])
-            if amount < curr_quantity:
-                self._vaccines.update_quantity(curr_old_vaccines_stock[0], amount)
-                amount = 0
+            elif int_amount < curr_quantity:
+                self._vaccines.update_quantity(curr_old_vaccines_stock[0], int_amount)
+                int_amount = 0
 
 
 repo = _Repository()

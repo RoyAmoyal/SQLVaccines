@@ -37,8 +37,8 @@ class _Suppliers:
 
     def insert(self, supplier):
         self._cursor.execute("""
-                INSERT INTO Suppliers (id, name, logistic) VALUES (?, ?, ?)
-            """, [supplier.id, supplier.name, supplier.logistic])
+                INSERT INTO Suppliers (id, name, logistic_id) VALUES (?, ?, ?)
+            """, [supplier.id, supplier.name, supplier.logistic_id])
 
     def fetch_table(self):
         self._cursor.execute("SELECT * FROM Suppliers ORDER BY Suppliers.id")
@@ -57,7 +57,7 @@ class _Clinics:
             """, [clinic.id, clinic.location, clinic.demand, clinic.logistic_id])
 
     def update_demand(self, clinic_id, amount):
-        self._cursor.execute("""UPDATE Vaccines SET demand = demand - ?
+        self._cursor.execute("""UPDATE Clinics SET demand = demand - ?
                                 WHERE id = ?""", [amount, clinic_id])
 
     def fetch_table(self):

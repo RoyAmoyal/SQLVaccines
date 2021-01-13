@@ -14,17 +14,17 @@ def main(config_file, order_file, output_file):
     repo.fill_tables(init_lines, first_line)
 
     with open(order_file, "r") as o:
-        order_lines = o.readlines()
+        order_lines = o.read().splitlines()
         with open(output_file, "a") as q:
             for line in order_lines:
                 args = line.split(',')  # we need to make sure that the split not ruin the line
                 args = [arg.strip() for arg in args]
                 if len(args) == 3:
-                    repo.recieved_shipment(args)
-                    curr_report = repo.order_report().split(',')
+                    repo.received_shipment(args)
+                    curr_report = repo.order_report()
                 else:
                     repo.send_shipment(args)
-                    curr_report = repo.order_report().split(',')
+                    curr_report = repo.order_report()
                 q.write(curr_report + "\n")
             q.close()
 
