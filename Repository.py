@@ -48,10 +48,34 @@ class _Repository:
         cli_num = int(data_arr[2])  # 1
         log_num = int(data_arr[3])  # 2
         sumNum = log_num + cli_num + sup_num + vac_num  # 8
-
+        currNum = sumNum
         i = sumNum
 
-        for line in reversed(init_lines):
+        for line in init_lines[sumNum - log_num:]:
+            args = line.split(',')  #
+            logistic = Logistic(*args)
+            self._logistics.insert(logistic)
+
+        currNum = currNum-log_num
+        for line in init_lines[currNum - cli_num :currNum]:
+            args = line.split(',')  #
+            clinic = Clinic(*args)
+            self._clinics.insert(clinic)
+
+        currNum = currNum-cli_num
+        for line in init_lines[currNum - sup_num :currNum]:
+            args = line.split(',')  #
+            supplier = Supplier(*args)
+            self._suppliers.insert(supplier)
+
+        currNum = currNum-sup_num
+        for line in init_lines[currNum - vac_num :currNum]:
+            args = line.split(',')
+            vaccine = Vaccine(*args)
+            self._vaccines.insert(vaccine)
+
+
+    """    for line in reversed(init_lines):
             args = line.split(',')   #
             if i <= vac_num:  # in this case we in the line of Vaccines
                 vaccine = Vaccine(*args)
@@ -70,7 +94,7 @@ class _Repository:
                 self._logistics.insert(logistic)
 
             i = i - 1
-
+             """
     def order_report(self):  # ),SUM(demand),SUM(count_received)
         cursor = self._conn.cursor()
         cursor.execute("""SELECT SUM(quantity) FROM vaccines""")
