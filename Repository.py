@@ -19,22 +19,22 @@ class _Repository:
 
     def create_tables(self):
         cursor = self._conn.cursor()
-        cursor.execute("""CREATE TABLE Vaccines(id INTEGER PRIMARY KEY,
+        cursor.execute("""CREATE TABLE vaccines(id INTEGER PRIMARY KEY,
                                                     date DATE NOT NULL,
-                                                    supplier_id INTEGER REFERENCES Supplier(id),  
-                                                    quantity INTEGER REFERENCES Coffee_stands(id))
+                                                    supplier INTEGER REFERENCES supplier(id),  
+                                                    quantity INTEGER NOT NULL)
         """)
 
-        cursor.execute("""CREATE TABLE Suppliers(id INTEGER PRIMARY KEY,
+        cursor.execute("""CREATE TABLE suppliers(id INTEGER PRIMARY KEY,
                                                           name STRING NOT NULL,
-                                                          logistic_id INTEGER REFERENCES Logistic(id))
+                                                          logistic INTEGER REFERENCES logistic(id))
               """)
-        cursor.execute("""CREATE TABLE Clinics(id INTEGER PRIMARY KEY,
+        cursor.execute("""CREATE TABLE clinics(id INTEGER PRIMARY KEY,
                                                           location STRING NOT NULL,
                                                           demand INTEGER NOT NULL,
-                                                          logistic_id INTEGER REFERENCES logistic(id))
+                                                          logistic INTEGER REFERENCES logistic(id))
               """)
-        cursor.execute("""CREATE TABLE Logistics(id INTEGER PRIMARY KEY,
+        cursor.execute("""CREATE TABLE logistics(id INTEGER PRIMARY KEY,
                                                               name STRING NOT NULL,
                                                               count_sent INTEGER NOT NULL,
                                                               count_received INTEGER NOT NULL)
@@ -52,7 +52,7 @@ class _Repository:
         i = sumNum
 
         for line in reversed(init_lines):
-            args = line.split(',')
+            args = line.split(',')   #
             if i <= vac_num:  # in this case we in the line of Vaccines
                 vaccine = Vaccine(*args)
                 self._vaccines.insert(vaccine)
@@ -73,16 +73,16 @@ class _Repository:
 
     def order_report(self):  # ),SUM(demand),SUM(count_received)
         cursor = self._conn.cursor()
-        cursor.execute("""SELECT SUM(quantity) FROM Vaccines""")
+        cursor.execute("""SELECT SUM(quantity) FROM vaccines""")
         quantity_tuple = cursor.fetchall()[0]
         quantity_str = "".join(map(str, quantity_tuple))
-        cursor.execute("""SELECT SUM(demand) FROM Clinics""")
+        cursor.execute("""SELECT SUM(demand) FROM clinics""")
         demand_tuple = cursor.fetchall()[0]
         demand_str = "".join(map(str, demand_tuple))
-        cursor.execute("""SELECT SUM(count_received) FROM Logistics""")
+        cursor.execute("""SELECT SUM(count_received) FROM logistics""")
         count_received_tuple = cursor.fetchall()[0]
         count_received_str = "".join(map(str, count_received_tuple))
-        cursor.execute("""SELECT SUM(count_sent) FROM Logistics""")
+        cursor.execute("""SELECT SUM(count_sent) FROM logistics""")
         count_sent_tuple = cursor.fetchall()[0]
         count_sent_str = "".join(map(str, count_sent_tuple))
         str_report = quantity_str + "," + demand_str + "," + count_received_str + "," + count_sent_str
@@ -93,14 +93,14 @@ class _Repository:
         amount = args[1]
         date = args[2]
         cursor = self._conn.cursor()
-        cursor.execute("""SELECT id FROM Suppliers
+        cursor.execute("""SELECT id FROM suppliers
         WHERE name = ?   """, [name])
         sup_id = cursor.fetchone()[0]
-        cursor.execute(""" SELECT COUNT(id) FROM Vaccines""")
+        cursor.execute(""" SELECT COUNT(id) FROM vaccines""")
         vac_id = cursor.fetchone()[0]
         vaccine = Vaccine(vac_id, date, sup_id, amount)
         self._vaccines.insert(vaccine)  # inserting to the Vaccines
-        cursor.execute("""SELECT logistic_id FROM Suppliers
+        cursor.execute("""SELECT logistic FROM suppliers
                 WHERE name = ?   """, [name])
         log_id = cursor.fetchone()[0]
         self._logistics.update_count_received(log_id, amount)  # update count_received
@@ -108,13 +108,13 @@ class _Repository:
     def send_shipment(self, args):
         amount = args[1]
         cursor = self._conn.cursor()
-        cursor.execute("""SELECT id FROM Clinics WHERE location = ?""", [args[0]])
+        cursor.execute("""SELECT id FROM clinics WHERE location = ?""", [args[0]])
         clinic_id = cursor.fetchone()[0]
         self._clinics.update_demand(clinic_id, amount)  # Updates the demand after the clinic got the vaccines
-        cursor.execute("""SELECT logistic_id FROM Clinics WHERE id = ?""", [clinic_id])
+        cursor.execute("""SELECT logistic FROM clinics WHERE id = ?""", [clinic_id])
         logistic_id = cursor.fetchone()[0]
         self._logistics.update_count_sent(logistic_id, amount)  # Updates the sent count of the logistic id
-        cursor.execute("""SELECT * FROM Vaccines""")
+        cursor.execute("""SELECT * FROM vaccines""")
         int_amount = int(amount)
         while int_amount > 0:
             curr_old_vaccines_stock = cursor.fetchone()  # The tupple of the first line on the vaccines table.

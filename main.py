@@ -6,7 +6,6 @@ from Repository import *
 def main(config_file, order_file, output_file):
     open("database.db", 'w').close()  # clear the db file
     open('output.txt', 'w').close() # clear the output file
-
     repo.create_tables()
     with open(config_file, "r") as f:
         all_lines = f.read().splitlines()
@@ -26,7 +25,10 @@ def main(config_file, order_file, output_file):
                 else:
                     repo.send_shipment(args)
                     curr_report = repo.order_report()
-                q.write(curr_report + "\n")
+                if line is not order_lines[-1]:
+                    q.write(curr_report + "\n")
+                else:
+                    q.write(curr_report)
             q.close()
 
 
